@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Выбор режима работы</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .choice-container {
+      text-align: center;
+      width: 100%;
+      max-width: 520px;
+      padding: 0 20px;
+    }
+
+    .choice-logo {
+      margin-bottom: 12px;
+    }
+
+    .choice-logo svg {
+      width: 64px;
+      height: 64px;
+      filter: drop-shadow(0 4px 15px rgba(229, 57, 53, 0.4));
+    }
+
+    .choice-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #E53935;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .choice-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 40px;
+    }
+
+    .choice-label {
+      font-size: 18px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 24px;
+    }
+
+    .mode-cards {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .mode-card {
+      flex: 1;
+      max-width: 220px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 32px 20px 28px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .mode-card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .mode-card:active {
+      transform: translateY(0px);
+      transition: all 0.1s ease;
+    }
+
+    .mode-card--normal:hover {
+      border-color: #26A69A;
+      box-shadow: 0 12px 40px rgba(38, 166, 154, 0.2);
+    }
+
+    .mode-card--kiosk:hover {
+      border-color: #1E88E5;
+      box-shadow: 0 12px 40px rgba(30, 136, 229, 0.2);
+    }
+
+    /* Состояние загрузки */
+    .mode-card--loading {
+      opacity: 0.6;
+      pointer-events: none;
+      border-color: #FFA726 !important;
+      box-shadow: 0 0 30px rgba(255, 167, 38, 0.3) !important;
+    }
+
+    .mode-card__icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mode-card--normal .mode-card__icon {
+      background: linear-gradient(135deg, #26A69A, #00897B);
+      box-shadow: 0 8px 20px rgba(38, 166, 154, 0.3);
+    }
+
+    .mode-card--kiosk .mode-card__icon {
+      background: linear-gradient(135deg, #1E88E5, #1565C0);
+      box-shadow: 0 8px 20px rgba(30, 136, 229, 0.3);
+    }
+
+    .mode-card__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .mode-card__desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.5;
+    }
+
+    /* Индикатор загрузки */
+    .loading-text {
+      display: none;
+      margin-top: 24px;
+      font-size: 14px;
+      color: #FFA726;
+      animation: pulse 1.5s infinite;
+    }
+
+    .loading-text.visible {
+      display: block;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .choice-container {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .mode-card:nth-child(1) {
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+    .mode-card:nth-child(2) {
+      animation: fadeInUp 0.6s ease 0.35s both;
+    }
+  </style>
+</head>
+<body>
+  <div class="choice-container">
+    <div class="choice-logo">
+      <svg viewBox="0 0 40 40" fill="none">
+        <polygon points="20,2 26,10 20,8 14,10" fill="#E53935"/>
+        <polygon points="20,8 26,10 24,18 20,14 16,18 14,10" fill="#E53935"/>
+        <polygon points="14,10 10,14 12,18 16,18" fill="#E53935"/>
+        <polygon points="26,10 30,14 28,18 24,18" fill="#E53935"/>
+        <polygon points="2,20 10,14 10,26" fill="#E53935"/>
+        <polygon points="38,20 30,14 30,26" fill="#E53935"/>
+        <polygon points="20,38 14,30 20,32 26,30" fill="#E53935"/>
+        <polygon points="14,30 10,26 16,22 20,32" fill="#E53935"/>
+        <polygon points="26,30 30,26 24,22 20,32" fill="#E53935"/>
+        <polygon points="16,22 12,18 20,14 24,18 28,18 24,22 20,26" fill="#E53935"/>
+      </svg>
+    </div>
+
+    <div class="choice-title">АРМ ГОССЛУЖАЩЕГО</div>
+    <div class="choice-subtitle">Автоматизированное рабочее место</div>
+
+    <div class="choice-label">Выберите режим работы</div>
+
+    <div class="mode-cards">
+      <div class="mode-card mode-card--normal" id="normalMode">
+        <div class="mode-card__icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="mode-card__title">Обычный</div>
+        <div class="mode-card__desc">Работа в ОС.<br>Панель в окне,<br>можно свернуть</div>
+      </div>
+
+      <div class="mode-card mode-card--kiosk" id="kioskMode">
+        <div class="mode-card__icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <rect x="2" y="3" width="20" height="18" rx="2"/>
+            <line x1="2" y1="8" x2="22" y2="8"/>
+            <circle cx="6" cy="5.5" r="0.8" fill="#fff" stroke="none"/>
+            <circle cx="9" cy="5.5" r="0.8" fill="#fff" stroke="none"/>
+            <circle cx="12" cy="5.5" r="0.8" fill="#fff" stroke="none"/>
+          </svg>
+        </div>
+        <div class="mode-card__title">Режим работы</div>
+        <div class="mode-card__desc">Полный экран.<br>Панель нельзя<br>закрыть или свернуть</div>
+      </div>
+    </div>
+
+    <div class="loading-text" id="loadingText">Загрузка панели...</div>
+  </div>
+
+  <script>
+    let isLoading = false;
+
+    async function selectMode(mode) {
+      if (isLoading) return;
+      isLoading = true;
+
+      console.log('Нажата кнопка:', mode);
+
+      // Показываем индикатор
+      document.getElementById('loadingText').classList.add('visible');
+
+      // Подсвечиваем выбранную карточку
+      const cards = document.querySelectorAll('.mode-card');
+      cards.forEach(c => c.classList.add('mode-card--loading'));
+
+      const selected = mode === 'normal'
+        ? document.getElementById('normalMode')
+        : document.getElementById('kioskMode');
+      selected.classList.remove('mode-card--loading');
+      selected.style.borderColor = '#FFA726';
+      selected.style.boxShadow = '0 0 30px rgba(255, 167, 38, 0.4)';
+
+      try {
+        console.log('Отправляем select-mode...');
+        const result = await window.electronAPI.selectMode(mode);
+        console.log('Результат:', result);
+      } catch (error) {
+        console.error('Ошибка:', error);
+        isLoading = false;
+        document.getElementById('loadingText').classList.remove('visible');
+        cards.forEach(c => c.classList.remove('mode-card--loading'));
+      }
+    }
+
+    document.getElementById('normalMode').addEventListener('click', () => {
+      selectMode('normal');
+    });
+
+    document.getElementById('kioskMode').addEventListener('click', () => {
+      selectMode('kiosk');
+    });
+
+    // Проверяем что API доступен
+    console.log('electronAPI доступен:', !!window.electronAPI);
+  </script>
+</body>
+</html>
