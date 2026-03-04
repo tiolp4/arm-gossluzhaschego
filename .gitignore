@@ -3,3 +3,4 @@ app.log
 *.lock
 /tmp/
 .DS_Store
+dist/

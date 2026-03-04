@@ -4,9 +4,29 @@
   "description": "АРМ Госслужащего",
   "main": "main.js",
   "scripts": {
-    "start": "electron . --no-sandbox"
+    "start": "electron . --no-sandbox",
+    "build": "electron-builder --linux AppImage"
+  },
+  "build": {
+    "appId": "ru.gossluzhaschiy.arm",
+    "productName": "ARM-Gossluzhaschego",
+    "linux": {
+      "target": "AppImage",
+      "category": "Office"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "choice.html",
+      "styles.css",
+      "renderer.js",
+      "package.json"
+    ],
+    "asar": true
   },
   "devDependencies": {
-    "electron": "^31.0.0"
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
   }
 }
