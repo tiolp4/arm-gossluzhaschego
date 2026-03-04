@@ -2,32 +2,33 @@ const powerBtn = document.getElementById('powerBtn');
 const powerMenu = document.getElementById('powerMenu');
 const shutdownBtn = document.getElementById('shutdownBtn');
 const rebootBtn = document.getElementById('rebootBtn');
+const logoutBtn = document.getElementById('logoutBtn');
 
-// Открыть/закрыть меню по клику на кнопку питания
+// Открыть/закрыть меню
 powerBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   powerMenu.classList.toggle('visible');
 });
 
-// Закрыть меню при клике в любое другое место
+// Закрыть при клике вне меню
 document.addEventListener('click', (e) => {
   if (!powerMenu.contains(e.target) && e.target !== powerBtn) {
     powerMenu.classList.remove('visible');
   }
 });
 
-// Закрыть меню при нажатии Escape
+// Закрыть по Escape
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     powerMenu.classList.remove('visible');
   }
 });
 
-// Выключить
-shutdownBtn.addEventListener('click', async () => {
+// Выйти из системы
+logoutBtn.addEventListener('click', async () => {
   powerMenu.classList.remove('visible');
   if (window.electronAPI) {
-    await window.electronAPI.shutdownComputer();
+    await window.electronAPI.logoutUser();
   }
 });
 
@@ -36,5 +37,13 @@ rebootBtn.addEventListener('click', async () => {
   powerMenu.classList.remove('visible');
   if (window.electronAPI) {
     await window.electronAPI.rebootComputer();
+  }
+});
+
+// Выключить
+shutdownBtn.addEventListener('click', async () => {
+  powerMenu.classList.remove('visible');
+  if (window.electronAPI) {
+    await window.electronAPI.shutdownComputer();
   }
 });

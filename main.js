@@ -36,7 +36,7 @@ function createChoiceWindow() {
 }
 
 // ========================
-// РЕЖИМ КИОСКА (полный экран, нельзя закрыть)
+// РЕЖИМ КИОСКА
 // ========================
 function createKioskWindow() {
   isKioskMode = true;
@@ -71,7 +71,6 @@ function createKioskWindow() {
     });
 
     console.log('Kiosk окно создано');
-
     mainWindow.setMenuBarVisibility(false);
     mainWindow.loadFile('index.html');
 
@@ -156,39 +155,66 @@ ipcMain.handle('select-mode', (event, mode) => {
   console.log('--- select-mode:', mode, '---');
 
   if (mode === 'normal') {
-    // ОБЫЧНЫЙ РЕЖИМ — просто закрываем всё и выходим
-    console.log('Обычный режим — закрываем приложение, работа в ОС');
-
+    console.log('Обычный режим — закрываем приложение');
     if (choiceWindow && !choiceWindow.isDestroyed()) {
       choiceWindow.removeAllListeners('close');
       choiceWindow.destroy();
       choiceWindow = null;
     }
-
-    // Выходим из приложения — пользователь работает в ОС
     app.quit();
     return true;
   }
 
   if (mode === 'kiosk') {
-    // РЕЖИМ РАБОТЫ — открываем панель на весь экран
     isSelectingMode = true;
-
-    // Сначала создаём kiosk окно
     createKioskWindow();
 
-    // Потом закрываем окно выбора
     if (choiceWindow && !choiceWindow.isDestroyed()) {
       choiceWindow.removeAllListeners('close');
       choiceWindow.destroy();
       choiceWindow = null;
       console.log('Окно выбора уничтожено');
     }
-
     return true;
   }
 });
 
+// Выйти из системы — вызываем стандартный диалог MATE
+ipcMain.handle('logout-user', async () => {
+  // Снимаем блокировки чтобы диалог MATE мог появиться поверх
+  if (mainWindow) mainWindow.allowClose = true;
+  isKioskMode = false;
+  unblockShortcuts();
+
+  // Убираем fullscreen чтобы диалог MATE был виден
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setFullScreen(false);
+    mainWindow.setAlwaysOnTop(false);
+    mainWindow.hide();
+  }
+
+  // Вызываем стандартный диалог MATE (без --force)
+  exec('mate-session-save --logout', (err) => {
+    if (err) {
+      console.log('mate-session-save ошибка:', err.message);
+
+      // Если пользователь нажал Отмена — восстанавливаем окно
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.show();
+        mainWindow.setAlwaysOnTop(true);
+        mainWindow.setFullScreen(true);
+        mainWindow.focus();
+        mainWindow.allowClose = false;
+        isKioskMode = true;
+        blockShortcuts();
+      }
+    }
+  });
+
+  return true;
+});
+
+// Выключение
 ipcMain.handle('shutdown-computer', async () => {
   const win = mainWindow || BrowserWindow.getFocusedWindow();
   const result = await dialog.showMessageBox(win, {
@@ -213,6 +239,7 @@ ipcMain.handle('shutdown-computer', async () => {
   return false;
 });
 
+// Перезагрузка
 ipcMain.handle('reboot-computer', async () => {
   const win = mainWindow || BrowserWindow.getFocusedWindow();
   const result = await dialog.showMessageBox(win, {
@@ -245,13 +272,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  console.log('window-all-closed, isSelectingMode:', isSelectingMode);
-
-  if (isSelectingMode) {
-    console.log('Переключение режима — не закрываем');
-    return;
-  }
-
+  if (isSelectingMode) return;
   if (process.platform !== 'darwin') {
     app.quit();
   }
